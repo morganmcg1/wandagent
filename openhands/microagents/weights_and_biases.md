@@ -82,6 +82,12 @@ for i,fusion_call_id in enumerate(fusion_1_3_call_ids[:25]):
         if i > 3: break
 ```
 
+When querying weave data, try to find just a single call and ensure it is correct and contains the corret data before trying to iterate through large list of calls.
+
+### Using Weave links
+If the users provides you with a URL to a Weave project or trace, navigate to that link to help understand the request and the trace name or id being referred to as well as any of the relevant inputs, metadata or outputs to the conversation. If you are stuck and unable to find the correct data via the api you can ask the user to pass you a URL link to an example trace, from which you can extract useful information from the image.
+
+
 ## Results Management
 
 Always offer to save analysis results or visualizations to W&B Reports.
