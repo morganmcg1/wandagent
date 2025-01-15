@@ -47,7 +47,10 @@ W&B Models Documentation:
 - User guides: https://docs.wandb.ai/guides/
 - Reference documentation: https://docs.wandb.ai/ref/
 
-## Examples
+## Querying Weave Data
+Weave data is stored in traces, which often have child calls. You might be able to query for a trace/op name directly but other times you might need to traverse the tree of child calls to find the right op with the right data. Use the W&B documentation links above as well as the example code below to guide you on this.
+
+
 Weave Data Handling Examples:
 
 1. Querying Weave Data:
