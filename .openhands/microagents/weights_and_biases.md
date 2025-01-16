@@ -51,38 +51,91 @@ W&B Models Documentation:
 Weave data is stored in traces, which often have relevant information stored in child calls. You might be able to query for a trace/op name directly but other times you might need to traverse the tree of child calls to find the right op with the right data. Use the W&B documentation links above as well as the example code below to guide you on the correct api to use.
 
 
-Weave Data Handling Examples:
+### How to Access Specific Calls in a Weave Trace
 
-1. Querying Weave Data:
-```python
-import weave
-assert weave.__version__ >= "0.50.14", "Please upgrade weave!" 
+0. Filtering and Querying
+Filtering Weave calls can be quite powerful, for example the following filter can be used to filter by op name. For example:
 
-client = weave.init("wandbot/wandbot-dev")
-calls = client.server.calls_query_stream({
-   "project_id": "wandbot/wandbot-dev",
-   "filter": {"trace_roots_only": True},
-   "query": {"$expr":{"$eq":[{"$getField":"inputs.chat_request.application"},{"$literal":"wandbot-1-3_modified-query-enhancer-prompt"}]}},
-   "sort_by": [{"field":"started_at","direction":"desc"}],
-})
-```
-
-2. Accessing Child Calls in a Trace:
+Filtering by Op Name "QueryEnhancer-call":
 
 ```python
-for i,fusion_call_id in enumerate(fusion_1_3_call_ids[:25]):
-    call = client.get_call(call_id=fusion_call_id)
-    children = call.children()
-    for child in children:
-        if "retriever_batch" in child.op_name:
-            print(f"Op name: {child.op_name}")
-            print(f"Inputs: {child.inputs}")
-            print("---")
-            break
-        if i > 3: break
+ "filter": {"op_names": ["weave:///wandbot/wandbot-dev/op/QueryEnhancer-call:*"]},
 ```
 
-When querying weave data, try to find just a single call and ensure it is correct and contains the corret data before trying to iterate through large list of calls.
+Querying by logged value "logging":
+
+```python
+"query": {"$expr":{"$contains":{"input":{"$getField":"inputs.inputs.query"},"substr":{"$literal":"logging"}}}},
+```
+
+Querying based on timestamp, after "12:00am January 14th, 2024" and before "12:00am January 16th 2024":
+
+```python
+ "query": {"$expr":{"$and":[{"$gt":[{"$getField":"started_at"},{"$literal":1736809200}]},{"$not":[{"$gt":[{"$getField":"started_at"},{"$literal":1736982000}]}]}]}},
+```
+
+
+
+2. Get a Parent Trace
+   - Use calls_query or calls_query_stream to get a root trace:
+  
+   ```python
+   client = weave.init("project/name")
+   parent_calls = client.server.calls_query({
+       "project_id": "project/name",
+       "filter": {"trace_roots_only": True},  # Important: gets root traces only
+       "query": {"$expr": {"$eq": [{"$getField": "your.filter.path"}, {"$literal": "your_value"}]}},
+       "sort_by": [{"field": "started_at", "direction": "desc"}],
+       "limit": 1  # Get just one trace to start
+   })
+   parent = parent_calls.calls[0]  # Get the first parent trace
+   ```
+
+3. Navigate the Trace Tree
+   - Get a call object using the client.get_call() method
+   - Use the children() method to traverse down the tree:
+
+   ```python
+   call_obj = client.get_call(call_id=parent.id)
+   children = call_obj.children()
+   ```
+
+4. Search Through Children
+   - Iterate through children and look for your target operation:
+  
+   ```
+   for child in children:
+       print(f"Operation: {child.op_name}")  # See what operations are available
+       if "YourTargetOperation" in child.op_name:
+           # Found it!
+           target_call = child
+   ```
+           
+5. Access Nested Children
+   - Remember calls can have multiple levels - you may need to go deeper:
+  
+   ```
+   for child in call_obj.children():
+       child_obj = client.get_call(call_id=child.id)
+       for grandchild in child_obj.children():
+           if "YourTargetOperation" in grandchild.op_name:
+               # Found it at level 2!
+               target_call = grandchild
+   ```
+
+6. Access Call Data
+   - Once you find your target call, access its data:
+   - Inputs: target_call.inputs
+   - Outputs: target_call.output
+   - Metadata: target_call.started_at, target_call.id, etc.
+
+Key Points:
+- Don't filter too early - get the full trace tree first, then search within it
+- Use `client.get_call()` and `.children()` to navigate the tree
+- Check op_name to identify specific operations
+- Be prepared to go multiple levels deep in the tree
+- Remember calls are hierarchical: parent -> children -> grandchildren etc.
+
 
 ### Using Weave links
 If the users provides you with a URL to a Weave project or trace, navigate to that link to help understand the request and the trace name or id being referred to as well as any of the relevant inputs, metadata or outputs to the conversation. If you are stuck and unable to find the correct data via the api you can ask the user to pass you a URL link to an example trace, from which you can extract useful information from the image.
