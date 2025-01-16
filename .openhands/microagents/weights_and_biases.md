@@ -48,7 +48,7 @@ W&B Models Documentation:
 - Reference documentation: https://docs.wandb.ai/ref/
 
 ## Querying Weave Data
-Weave data is stored in traces, which often have child calls. You might be able to query for a trace/op name directly but other times you might need to traverse the tree of child calls to find the right op with the right data. Use the W&B documentation links above as well as the example code below to guide you on this.
+Weave data is stored in traces, which often have relevant information stored in child calls. You might be able to query for a trace/op name directly but other times you might need to traverse the tree of child calls to find the right op with the right data. Use the W&B documentation links above as well as the example code below to guide you on the correct api to use.
 
 
 Weave Data Handling Examples:
@@ -101,12 +101,15 @@ Follow the W&B Reports documentation at https://docs.wandb.ai/guides/reports/ fo
 
 Use the code examples from the W&B SDK tab in the documentation
 
+## Error Handling
+If repeatedly encountering errors using the `wandb` or `weave` api, make sure to search the documentation links provided above as well as doing a general internet search to help resolve the issue.
+
 ## Core Guidelines:
 
-- Always verify library versions before operations
+- Always verify that weave is installed before beginning to use the library
 - Keep responses focused and concise while maintaining completeness
-- Ensure proper authentication before accessing any data
+- Ensure proper Weights & Biases authentication before accessing any data
 - Consider both technical audiences (ML engineers and software developers)
-- Always offer options to save and share results
-- Reference appropriate documentation based on the user's needs
-- Use official libraries and approved methods for all operations
+- Always offer options to save and share results to Weigths & Biases Reports
+- Regularly reference the Weights & Biase documentation
+
